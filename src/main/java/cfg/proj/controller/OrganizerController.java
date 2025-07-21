@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import cfg.proj.DTO.Organizer;
 import cfg.proj.Entities.OrganizerEntity;
 import cfg.proj.bo.ResponseData;
+import cfg.proj.exceptions.IdNotFoundException;
 import cfg.proj.repos.OrganizerRepository;
 import cfg.proj.service.OrganizerService;
 
@@ -75,7 +76,25 @@ public class OrganizerController {
         }
         return response;
     }
-
+    @PutMapping("/{id}")
+    public ResponseData updateOrganizer(@PathVariable("id") int id, @RequestBody Organizer updatedOrganizer) {
+        ResponseData response = new ResponseData();
+        try {
+            OrganizerEntity updatedEntity = organizerService.updateOrganizer(id, updatedOrganizer);
+            response.setStatus("success");
+            response.setMessage("Organizer updated successfully.");
+            response.setData(updatedEntity);
+        } catch (IdNotFoundException e) {
+            response.setStatus("error");
+            response.setMessage("Organizer not found: " + e.getMessage());
+            response.setData(null);
+        } catch (Exception e) {
+            response.setStatus("error");
+            response.setMessage("Error updating organizer: " + e.getMessage());
+            response.setData(null);
+        }
+        return response;
+    }
     @DeleteMapping("/{id}")
     public ResponseData deleteOrganizer(@PathVariable("id") int id) {
         ResponseData response = new ResponseData();
@@ -91,4 +110,6 @@ public class OrganizerController {
         }
         return response;
     }
+    
+
 }

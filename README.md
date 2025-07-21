@@ -27,4 +27,9 @@ GET: http://localhost:8080/bookings/event/1 is for fetching data based on eventi
 
 GET: http://localhost:8080/bookings/date/{date} is for fetching data based on date.
 
+POST: http://localhost:8080/events/create
+DELETE:http://localhost:8080/events/100
+GET:http://localhost:8080/events/upcoming
+GET:http://localhost:8080/events/category/Music
+
 

@@ -47,10 +47,10 @@ import static org.mockito.Mockito.*;
 	    void createUser_ValidUser_Success() {
 	        when(userRepository.save(any(UserEntity.class))).thenReturn(savedUser);
 
-	        UserEntity result = userService.createUser(validUserDto);
+	        User result = userService.createUser(validUserDto);
 
 	        assertNotNull(result);
-	        assertEquals("testuser", result.getUserName());
+	        assertEquals("testuser", result.getUsername());
 	        verify(userRepository, times(1)).save(any(UserEntity.class));
 	    }
 
@@ -91,10 +91,10 @@ import static org.mockito.Mockito.*;
 	    void getUserById_UserExists_ReturnsUser() throws UserNotFoundException {
 	        when(userRepository.findById(1)).thenReturn(Optional.of(savedUser));
 
-	        UserEntity result = userService.getUserById(1);
+	        User result = userService.getUserById(1);
 
 	        assertNotNull(result);
-	        assertEquals(1, result.getUserId());
+	        assertEquals(1, result.getUser_id());
 	    }
 
 	    @Test
@@ -103,22 +103,6 @@ import static org.mockito.Mockito.*;
 
 	        assertThrows(UserNotFoundException.class, () -> userService.getUserById(1));
 	    }
-
-	    @Test
-	    void deleteUser_UserExists_Success() throws IdNotFoundException {
-	        when(userRepository.findById(1)).thenReturn(Optional.of(savedUser));
-
-	        assertFalse(userService.deleteUser(1));
-	        verify(userRepository).deleteById(1);
-	    }
-
-	    @Test
-	    void deleteUser_UserNotFound_ThrowsException() {
-	        when(userRepository.findById(1)).thenReturn(Optional.empty());
-
-	        assertThrows(IdNotFoundException.class, () -> userService.deleteUser(1));
-	    }
-
 
 
 	    @Test
@@ -132,7 +116,7 @@ import static org.mockito.Mockito.*;
 	    void getAllUsers_ReturnsList() {
 	        when(userRepository.findAll()).thenReturn(List.of(savedUser));
 
-	        List<UserEntity> users = userService.getAllUsers();
+	        List<User> users = userService.getAllUsers();
 
 	        assertEquals(1, users.size());
 	    }

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import cfg.proj.DTO.User;
 import cfg.proj.Entities.UserEntity;
 import cfg.proj.bo.ResponseData;
+import cfg.proj.exceptions.UserNotFoundException;
 import cfg.proj.service.UserRegistrationService;
 
 @RestController
@@ -87,6 +88,25 @@ public class UserRegistrationController {
         } catch (Exception e) {
             response.setStatus("failed");
             response.setMessage("Error deleting user: " + e.getMessage());
+            response.setData(null);
+        }
+        return response;
+    }
+    @PutMapping("/{id}")
+    public ResponseData updateUser(@PathVariable("id") int id, @RequestBody User updatedUser) {
+        ResponseData response = new ResponseData();
+        try {
+            UserEntity updatedEntity = userService.updateUser(id, updatedUser);
+            response.setStatus("success");
+            response.setMessage("User updated successfully.");
+            response.setData(updatedEntity);
+        } catch (UserNotFoundException e) {
+            response.setStatus("error");
+            response.setMessage("User not found: " + e.getMessage());
+            response.setData(null);
+        } catch (Exception e) {
+            response.setStatus("error");
+            response.setMessage("Error updating user: " + e.getMessage());
             response.setData(null);
         }
         return response;

@@ -3,10 +3,16 @@ package cfg.proj.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import cfg.proj.DTO.User;
-import cfg.proj.Entities.UserEntity;
 import cfg.proj.bo.ResponseData;
 import cfg.proj.exceptions.UserNotFoundException;
 import cfg.proj.service.UserRegistrationService;
@@ -22,7 +28,7 @@ public class UserRegistrationController {
     public ResponseData createUser(@RequestBody User userDto) {
         ResponseData response = new ResponseData();
         try {
-            UserEntity user = userService.createUser(userDto);
+            User user = userService.createUser(userDto);
             response.setStatus("success");
             response.setMessage("User created successfully.");
             response.setData(user);
@@ -38,7 +44,7 @@ public class UserRegistrationController {
     public ResponseData getUserById(@PathVariable("id") int userId) {
         ResponseData response = new ResponseData();
         try {
-            UserEntity user = userService.getUserById(userId);
+            User user = userService.getUserById(userId);
             if (user != null) {
                 response.setStatus("success");
                 response.setMessage("User found.");
@@ -60,7 +66,7 @@ public class UserRegistrationController {
     public ResponseData getAllUsers() {
         ResponseData response = new ResponseData();
         try {
-            List<UserEntity> users = userService.getAllUsers();
+            List<User> users = userService.getAllUsers();
             response.setStatus("success");
             response.setMessage("Users fetched successfully.");
             response.setData(users);
@@ -96,7 +102,7 @@ public class UserRegistrationController {
     public ResponseData updateUser(@PathVariable("id") int id, @RequestBody User updatedUser) {
         ResponseData response = new ResponseData();
         try {
-            UserEntity updatedEntity = userService.updateUser(id, updatedUser);
+            User updatedEntity = userService.updateUser(id, updatedUser);
             response.setStatus("success");
             response.setMessage("User updated successfully.");
             response.setData(updatedEntity);

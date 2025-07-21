@@ -1,10 +1,19 @@
 package cfg.proj.controller;
 
+import java.util.ArrayList;
+
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import cfg.proj.DTO.Organizer;
 import cfg.proj.Entities.OrganizerEntity;
@@ -27,7 +36,7 @@ public class OrganizerController {
     public ResponseData createOrganizer(@RequestBody Organizer organizer) {
         ResponseData response = new ResponseData();
         try {
-            OrganizerEntity created = organizerService.createOrganizer(organizer);
+            Organizer created = organizerService.createOrganizer(organizer);
             response.setStatus("success");
             response.setMessage("Organizer created successfully.");
             response.setData(created);
@@ -65,10 +74,22 @@ public class OrganizerController {
     public ResponseData getAllOrganizers() {
         ResponseData response = new ResponseData();
         try {
-            List<OrganizerEntity> organizers = organizerRepo.findAll();
+            List<OrganizerEntity> entities = organizerRepo.findAll();
+            List<Organizer> dtoList = new ArrayList<>();
+
+            for (OrganizerEntity entity : entities) {
+                Organizer dto = new Organizer();
+                dto.setId(entity.getId());
+                dto.setUsername(entity.getUsername());
+                dto.setEmail(entity.getEmail());
+                dto.setPassword(entity.getPassword()); 
+                dtoList.add(dto);
+            }
+
             response.setStatus("success");
             response.setMessage("Organizers fetched successfully.");
-            response.setData(organizers);
+            response.setData(dtoList);
+
         } catch (Exception e) {
             response.setStatus("error");
             response.setMessage("Error fetching organizers: " + e.getMessage());
@@ -76,11 +97,13 @@ public class OrganizerController {
         }
         return response;
     }
+
+    
     @PutMapping("/{id}")
     public ResponseData updateOrganizer(@PathVariable("id") int id, @RequestBody Organizer updatedOrganizer) {
         ResponseData response = new ResponseData();
         try {
-            OrganizerEntity updatedEntity = organizerService.updateOrganizer(id, updatedOrganizer);
+            Organizer updatedEntity = organizerService.updateOrganizer(id, updatedOrganizer);
             response.setStatus("success");
             response.setMessage("Organizer updated successfully.");
             response.setData(updatedEntity);
@@ -108,7 +131,7 @@ public class OrganizerController {
             response.setMessage("Error deleting organizer: " + e.getMessage());
             response.setData(null);
         }
-        return response;
+        return response;  
     }
     
 

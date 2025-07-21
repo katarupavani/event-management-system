@@ -2,6 +2,7 @@ package cfg.proj.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,17 +20,26 @@ public class UserRegistrationService {
     @Autowired
     private UserRepository userrepo;
 
-    public UserEntity createUser(User userDto) {
-        validateUserCredentials(userDto.getUsername(), userDto.getPassword(),userDto.getEmail());
+    public User createUser(User userDto) {
+        validateUserCredentials(userDto.getUsername(), userDto.getPassword(), userDto.getEmail());
 
-        UserEntity user1 = new UserEntity();
-        user1.setUserId(userDto.getUser_id());
-        user1.setUserName(userDto.getUsername());
-        user1.setEmail(userDto.getEmail());
-        user1.setPassword(userDto.getPassword());
+        UserEntity userEntity = new UserEntity();
+        userEntity.setUserId(userDto.getUser_id());
+        userEntity.setUserName(userDto.getUsername());
+        userEntity.setEmail(userDto.getEmail());
+        userEntity.setPassword(userDto.getPassword());
 
-        return userrepo.save(user1);
+        UserEntity savedUser = userrepo.save(userEntity);
+
+        
+        User responseDto = new User();
+        responseDto.setUser_id(savedUser.getUserId());
+        responseDto.setUsername(savedUser.getUserName());
+        responseDto.setEmail(savedUser.getEmail());
+
+        return responseDto;
     }
+
 
     public boolean deleteUser(int userId) throws IdNotFoundException {
         Optional<UserEntity> optionalUser = userrepo.findById(userId);
@@ -49,36 +59,56 @@ public class UserRegistrationService {
         }
     }
 
-    public UserEntity updateUser(int userId, User updatedUser) throws UserNotFoundException {
-        validateUserCredentials(updatedUser.getUsername(), updatedUser.getPassword(),updatedUser.getEmail());
+    public User updateUser(int userId, User updatedUser) throws UserNotFoundException {
+        validateUserCredentials(updatedUser.getUsername(), updatedUser.getPassword(), updatedUser.getEmail());
 
         Optional<UserEntity> optionalUser = userrepo.findById(userId);
 
         if (optionalUser.isPresent()) {
             UserEntity existingUser = optionalUser.get();
-
             existingUser.setUserName(updatedUser.getUsername());
             existingUser.setEmail(updatedUser.getEmail());
             existingUser.setPassword(updatedUser.getPassword());
+            UserEntity savedUser = userrepo.save(existingUser);
+            User dto = new User();
+            dto.setUser_id(savedUser.getUserId());
+            dto.setUsername(savedUser.getUserName());
+            dto.setEmail(savedUser.getEmail());
 
-            return userrepo.save(existingUser);
+            return dto;
         } else {
             throw new UserNotFoundException("User not found with ID: " + userId);
         }
     }
 
-    public UserEntity getUserById(int userId) throws UserNotFoundException {
+
+    public User getUserById(int userId) throws UserNotFoundException {
         Optional<UserEntity> optionalUser = userrepo.findById(userId);
         if (optionalUser.isPresent()) {
-            return optionalUser.get();
+            UserEntity userEntity = optionalUser.get();
+            User dto = new User();
+            dto.setUser_id(userEntity.getUserId());
+            dto.setUsername(userEntity.getUserName());
+            dto.setEmail(userEntity.getEmail());
+            //dto.setPassword(userEntity.getPassword());
+            return dto;
         } else {
             throw new UserNotFoundException("User not found with ID: " + userId);
         }
     }
 
-    public List<UserEntity> getAllUsers() {
-        return userrepo.findAll();
+
+    public List<User> getAllUsers() {
+        List<UserEntity> users = userrepo.findAll();
+        return users.stream().map(user -> {
+            User dto = new User();
+            dto.setUser_id(user.getUserId());
+            dto.setUsername(user.getUserName());
+            dto.setEmail(user.getEmail());
+            return dto;
+        }).collect(Collectors.toList());
     }
+
 
     private void validateUserCredentials(String username, String password,String email) {
         if (username == null || username.trim().isEmpty()) {

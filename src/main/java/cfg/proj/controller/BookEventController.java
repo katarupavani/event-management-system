@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import cfg.proj.DTO.BookEvent;
 import cfg.proj.Entities.BookEventEntity;
 import cfg.proj.bo.ResponseData;
+import cfg.proj.exceptions.BookNotFoundException;
 import cfg.proj.service.BookEventService;
 
 @RestController
@@ -97,6 +98,8 @@ public class BookEventController {
         }
         return response;
     }
+
+
 
     @GetMapping("/event/{eventId}")
     public ResponseData getBookingsByEventId(@PathVariable int eventId) {

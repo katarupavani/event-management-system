@@ -24,7 +24,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-public class FeedbackTest {
+public class FeedbackServiceTest {
 
     @Mock
     private FeedbackRepository feedbackRepo;

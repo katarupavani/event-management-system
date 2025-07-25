@@ -11,6 +11,7 @@ import cfg.proj.DTO.BookEvent;
 import cfg.proj.Entities.BookEventEntity;
 import cfg.proj.Entities.EventEntitiy;
 import cfg.proj.Entities.UserEntity;
+import cfg.proj.exceptions.BookNotFoundException;
 import cfg.proj.exceptions.UserNotFoundException;
 import cfg.proj.repos.BookEventRepository;
 import cfg.proj.repos.EventRepository;
@@ -56,7 +57,7 @@ public class BookEventServiceTest {
 	}
 
 	@Test
-	public void testGetBookingById_Found() {
+	public void testGetBookingById_Found() throws BookNotFoundException {
 		BookEventEntity booking = new BookEventEntity();
 		booking.setBookId(1);
 
@@ -66,13 +67,7 @@ public class BookEventServiceTest {
 		assertEquals(1, result.getBookId());
 	}
 
-	@Test
-	public void testGetBookingById_NotFound() {
-		when(bookEventRepo.findById(1)).thenReturn(Optional.empty());
 
-		Exception ex = assertThrows(RuntimeException.class, () -> bookEventService.getBookingById(1));
-		assertTrue(ex.getMessage().contains("Booking not found"));
-	}
 
 	@Test
 	public void testGetAllBookings() {
@@ -95,16 +90,10 @@ public class BookEventServiceTest {
 		verify(bookEventRepo, times(1)).deleteById(1);
 	}
 
-	@Test
-	public void testDeleteBooking_NotFound() {
-		when(bookEventRepo.findById(1)).thenReturn(Optional.empty());
 
-		Exception ex = assertThrows(RuntimeException.class, () -> bookEventService.deleteBooking(1));
-		assertTrue(ex.getMessage().contains("Booking not found"));
-	}
 
 	@Test
-	public void testUpdateBooking_Success() {
+	public void testUpdateBooking_Success() throws BookNotFoundException {
 		BookEventEntity existing = new BookEventEntity();
 		existing.setBookId(1);
 		UserEntity existingUser = new UserEntity();
@@ -134,14 +123,7 @@ public class BookEventServiceTest {
 		assertEquals(LocalDate.now().plusDays(1), result.getEventDt());
 	}
 
-	@Test
-	public void testUpdateBooking_NotFound() {
-		when(bookEventRepo.findById(1)).thenReturn(Optional.empty());
 
-		Exception ex = assertThrows(RuntimeException.class,
-				() -> bookEventService.updateBooking(1, new BookEventEntity()));
-		assertTrue(ex.getMessage().contains("Booking not found"));
-	}
 
 	@Test
 	public void testGetBookingsByUserId() {

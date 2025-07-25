@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import cfg.proj.Entities.BookEventEntity;
+import cfg.proj.Entities.EventEntitiy;
+import cfg.proj.Entities.UserEntity;
 
 @Repository
 public interface BookEventRepository extends JpaRepository<BookEventEntity, Integer> {
@@ -19,5 +21,11 @@ public interface BookEventRepository extends JpaRepository<BookEventEntity, Inte
 	List<BookEventEntity> findByEventId(int eventId);
 
 	List<BookEventEntity> findByEventDt(LocalDate date);
+
+	boolean existsByEventAndUser(EventEntitiy event, UserEntity user);
+
+	long countByEvent(EventEntitiy event);
+
+	List<BookEventEntity> findByUser(UserEntity user);
 
 }

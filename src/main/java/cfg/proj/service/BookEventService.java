@@ -11,6 +11,8 @@ import cfg.proj.DTO.BookEvent;
 import cfg.proj.Entities.BookEventEntity;
 import cfg.proj.Entities.EventEntitiy;
 import cfg.proj.Entities.UserEntity;
+import cfg.proj.exceptions.BookEventException;
+import cfg.proj.exceptions.BookNotFoundException;
 import cfg.proj.exceptions.UserNotFoundException;
 import cfg.proj.repos.BookEventRepository;
 import cfg.proj.repos.EventRepository;
@@ -27,29 +29,55 @@ public class BookEventService {
 	@Autowired
 	private EventRepository eventRepo;
 
-	public BookEventEntity bookEvent(BookEvent booking) throws UserNotFoundException {
-		Optional<EventEntitiy> event = eventRepo.findById(booking.getEventId());
-		Optional<UserEntity> user = userRepo.findById(booking.getUserId());
-		if (event.isPresent() && user.isPresent()) {
-			BookEventEntity bookEvent = new BookEventEntity();
-			bookEvent.setBookId(booking.getBookId());
-			bookEvent.setEvent(event.get());
-			bookEvent.setUser(user.get());
-			bookEvent.setEventDt(LocalDate.now());
-			bookEventRepo.save(bookEvent);
-			System.out.println("User booked for event successfully...");
-		} else {
-			throw new UserNotFoundException("user or event does not exist");
-		}
-		return null;
+	public BookEventEntity bookEvent(BookEvent booking) throws UserNotFoundException, BookEventException {
+	    Optional<EventEntitiy> eventOpt = eventRepo.findById(booking.getEventId());
+	    Optional<UserEntity> userOpt = userRepo.findById(booking.getUserId());
+
+	    if (eventOpt.isPresent() && userOpt.isPresent()) {
+	        EventEntitiy event = eventOpt.get();
+	        UserEntity user = userOpt.get();
+
+	        long bookingCount = bookEventRepo.countByEvent(event);
+	        boolean userAlreadyBooked = bookEventRepo.existsByEventAndUser(event, user);
+
+	        if (bookingCount >= event.getLimit() || userAlreadyBooked) {
+	            throw new BookEventException("Cannot book event: Either event is full or user has already booked.");
+	        }
+
+	        // Check date + time conflict
+	        List<BookEventEntity> userBookings = bookEventRepo.findByUser(user);
+
+	        for (BookEventEntity booked : userBookings) {
+	            EventEntitiy bookedEvent = booked.getEvent();
+
+	            boolean isSameDate = bookedEvent.getDate().equals(event.getDate());
+	            boolean isTimeOverlap = event.getStartTime().isBefore(bookedEvent.getEndTime()) &&
+	                                    event.getEndTime().isAfter(bookedEvent.getStartTime());
+
+	            if (isSameDate && isTimeOverlap) {
+	                throw new BookEventException("Cannot book event: Conflict with another event on same date and time.");
+	            }
+	        }
+
+	        // No conflict - proceed
+	        BookEventEntity bookEvent = new BookEventEntity();
+	        bookEvent.setBookId(booking.getBookId());
+	        bookEvent.setEvent(event);
+	        bookEvent.setUser(user);
+	        bookEvent.setEventDt(LocalDate.now());
+	        return bookEventRepo.save(bookEvent);
+	    } else {
+	        throw new UserNotFoundException("User or event does not exist");
+	    }
 	}
 
-	public BookEventEntity getBookingById(int bookId) {
+
+	public BookEventEntity getBookingById(int bookId) throws BookNotFoundException {
 		Optional<BookEventEntity> optionalBooking = bookEventRepo.findById(bookId);
 		if (optionalBooking.isPresent()) {
 			return optionalBooking.get();
 		} else {
-			throw new RuntimeException("Booking not found with ID: " + bookId);
+			throw new BookNotFoundException("Booking not found with ID: " + bookId);
 		}
 	}
 
@@ -57,16 +85,16 @@ public class BookEventService {
 		return bookEventRepo.findAll();
 	}
 
-	public void deleteBooking(int bookId) {
+	public void deleteBooking(int bookId) throws BookNotFoundException {
 		Optional<BookEventEntity> optionalBooking = bookEventRepo.findById(bookId);
 		if (optionalBooking.isPresent()) {
 			bookEventRepo.deleteById(bookId);
 		} else {
-			throw new RuntimeException("Booking not found with ID: " + bookId);
+			throw new BookNotFoundException("Booking not found with ID: " + bookId);
 		}
 	}
 
-	public BookEventEntity updateBooking(int bookId, BookEventEntity updatedBooking) {
+	public BookEventEntity updateBooking(int bookId, BookEventEntity updatedBooking) throws BookNotFoundException {
 		Optional<BookEventEntity> optionalBooking = bookEventRepo.findById(bookId);
 		if (optionalBooking.isPresent()) {
 			BookEventEntity existingBooking = optionalBooking.get();
@@ -77,7 +105,7 @@ public class BookEventService {
 
 			return bookEventRepo.save(existingBooking);
 		} else {
-			throw new RuntimeException("Booking not found with ID: " + bookId);
+			throw new BookNotFoundException("Booking not found with ID: " + bookId);
 		}
 	}
 

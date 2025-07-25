@@ -32,17 +32,25 @@ public class FeedbackService {
         Optional<EventEntitiy> event = eventRepo.findById(eventId);
 
         if (user.isPresent() && event.isPresent()) {
+            // Check if feedback already exists for this user and event
+            Optional<FeedbackEntity> existingFeedback = feedbackRepo.findByUser_UserIdAndEvent_EventId(userId, eventId);
+            if (existingFeedback.isPresent()) {
+                throw new IllegalStateException("User has already given feedback for this event.");
+            }
+
             FeedbackEntity feedback = new FeedbackEntity();
             feedback.setEfid(feedback2.getFid());
             feedback.setComment(feedback2.getComment());
             feedback.setRating(feedback2.getRating());
             feedback.setUser(user.get());
             feedback.setEvent(event.get());
+
             return feedbackRepo.save(feedback);
         } else {
             throw new UserNotFoundException("User or Event not found");
         }
     }
+
 
     public FeedbackEntity getFeedbackById(int feedbackId) {
         return feedbackRepo.findById(feedbackId)

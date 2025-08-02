@@ -7,14 +7,14 @@ import lombok.Data;
 @Data
 public class Event {
 	
-	private int event_id;
-	private String event_name;
+	private int eventId;
+	private String eventName;
 	private String category;
 	private String description;
 	private int limit;
 	private String location;
 	private LocalDate date;
 	
-	private LocalTime start_time;
-	private LocalTime end_time;
+	private LocalTime startTime;
+	private LocalTime endTime;
 }

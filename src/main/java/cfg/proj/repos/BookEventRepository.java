@@ -14,18 +14,20 @@ import cfg.proj.Entities.UserEntity;
 @Repository
 public interface BookEventRepository extends JpaRepository<BookEventEntity, Integer> {
 
-	@Query("from BookEventEntity b where b.user.userId =:userId")
-	List<BookEventEntity> findByUserId(int userId);
+ @Query("from BookEventEntity b where b.user.userId =:userId")
+ List<BookEventEntity> findByUserId(int userId);
 
-	@Query("from BookEventEntity b where b.event.eventId =:eventId")
-	List<BookEventEntity> findByEventId(int eventId);
+ @Query("from BookEventEntity b where b.event.eventId =:eventId")
+ List<BookEventEntity> findByEventId(int eventId);
 
-	List<BookEventEntity> findByEventDt(LocalDate date);
+ List<BookEventEntity> findByEventDt(LocalDate date);
 
-	boolean existsByEventAndUser(EventEntitiy event, UserEntity user);
+ boolean existsByEventAndUser(EventEntitiy event, UserEntity user);
 
-	long countByEvent(EventEntitiy event);
+ long countByEvent(EventEntitiy event);
 
-	List<BookEventEntity> findByUser(UserEntity user);
+ List<BookEventEntity> findByUser(UserEntity user);
+ 
+
 
 }

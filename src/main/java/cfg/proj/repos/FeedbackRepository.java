@@ -16,6 +16,7 @@ public interface FeedbackRepository extends JpaRepository<FeedbackEntity, Intege
 	List<FeedbackEntity> findByUserUserId(int userId);
 
 	Optional<FeedbackEntity> findByUser_UserIdAndEvent_EventId(int userId, int eventId);
+	boolean existsByUserUserIdAndEventEventId(int userid, int eventid);
 
 	
 

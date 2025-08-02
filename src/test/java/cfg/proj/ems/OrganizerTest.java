@@ -18,7 +18,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-public class OrganizerServiceTest {
+public class OrganizerTest {
 
     @Mock
     private OrganizerRepository organizerRepo;
@@ -48,7 +48,7 @@ public class OrganizerServiceTest {
 
         when(organizerRepo.save(any(OrganizerEntity.class))).thenReturn(savedEntity);
 
-        OrganizerEntity result = organizerService.createOrganizer(organizer);
+        Organizer result = organizerService.createOrganizer(organizer);
 
         assertNotNull(result);
         assertEquals("validUser", result.getUsername());
@@ -190,7 +190,7 @@ public class OrganizerServiceTest {
         when(organizerRepo.findById(1)).thenReturn(Optional.of(existing));
         when(organizerRepo.save(any(OrganizerEntity.class))).thenAnswer(i -> i.getArgument(0));
 
-        OrganizerEntity result = organizerService.updateOrganizer(1, updated);
+        Organizer result = organizerService.updateOrganizer(1, updated);
 
         assertEquals("newUser", result.getUsername());
         assertEquals("new@example.com", result.getEmail());

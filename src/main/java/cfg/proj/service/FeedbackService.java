@@ -2,6 +2,7 @@ package cfg.proj.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,46 +28,91 @@ public class FeedbackService {
     @Autowired
     private EventRepository eventRepo;
 
-    public FeedbackEntity addFeedback(int userId, int eventId, Feedback feedback2) throws UserNotFoundException {
-        Optional<UserEntity> user = userRepo.findById(userId);
-        Optional<EventEntitiy> event = eventRepo.findById(eventId);
+    // Convert Entity to DTO
+    private Feedback toDto(FeedbackEntity entity) {
+        Feedback dto = new Feedback();
+        dto.setFid(entity.getEfid());
+        dto.setComment(entity.getComment());
+        dto.setRating(entity.getRating());
+
+        dto.setUserid(entity.getUser().getUserId());
+        dto.setUserName(entity.getUser().getUserName()); // <-- add this
+
+        dto.setEventid(entity.getEvent().getEventId());
+        dto.setEventName(entity.getEvent().getEventName()); // <-- add this
+
+        return dto;
+    }
+    // Convert DTO to Entity (partial for update or new)
+    private FeedbackEntity toEntity(Feedback dto, UserEntity user, EventEntitiy event) {
+        FeedbackEntity entity = new FeedbackEntity();
+        entity.setEfid(dto.getFid());
+        entity.setComment(dto.getComment());
+        entity.setRating(dto.getRating());
+        entity.setUser(user);
+        entity.setEvent(event);
+        return entity;
+    }
+
+//    public Feedback addFeedback(Feedback feedbackDto) throws UserNotFoundException {
+//        Optional<UserEntity> user = userRepo.findById(feedbackDto.getUserid());
+//        Optional<EventEntitiy> event = eventRepo.findById(feedbackDto.getEventid());
+//
+//        if (user.isPresent() && event.isPresent()) {
+//            FeedbackEntity feedbackEntity = toEntity(feedbackDto, user.get(), event.get());
+//            FeedbackEntity saved = feedbackRepo.save(feedbackEntity);
+//            return toDto(saved);
+//        } else {
+//            throw new UserNotFoundException("User or Event not found");
+//        }
+//    }
+    
+    public Feedback addFeedback(Feedback feedbackDto) throws UserNotFoundException {
+        Optional<UserEntity> user = userRepo.findById(feedbackDto.getUserid());
+        Optional<EventEntitiy> event = eventRepo.findById(feedbackDto.getEventid());
 
         if (user.isPresent() && event.isPresent()) {
             // Check if feedback already exists for this user and event
-            Optional<FeedbackEntity> existingFeedback = feedbackRepo.findByUser_UserIdAndEvent_EventId(userId, eventId);
-            if (existingFeedback.isPresent()) {
-                throw new IllegalStateException("User has already given feedback for this event.");
+            boolean alreadyExists = feedbackRepo.existsByUserUserIdAndEventEventId(feedbackDto.getUserid(), feedbackDto.getEventid());
+            
+            if (alreadyExists) {
+                throw new RuntimeException("Feedback already submitted for this event by the user");
             }
 
-            FeedbackEntity feedback = new FeedbackEntity();
-            feedback.setEfid(feedback2.getFid());
-            feedback.setComment(feedback2.getComment());
-            feedback.setRating(feedback2.getRating());
-            feedback.setUser(user.get());
-            feedback.setEvent(event.get());
-
-            return feedbackRepo.save(feedback);
+            FeedbackEntity feedbackEntity = toEntity(feedbackDto, user.get(), event.get());
+            FeedbackEntity saved = feedbackRepo.save(feedbackEntity);
+            return toDto(saved);
         } else {
             throw new UserNotFoundException("User or Event not found");
         }
     }
 
 
-    public FeedbackEntity getFeedbackById(int feedbackId) {
-        return feedbackRepo.findById(feedbackId)
+    public Feedback getFeedbackById(int feedbackId) {
+        FeedbackEntity entity = feedbackRepo.findById(feedbackId)
             .orElseThrow(() -> new RuntimeException("Feedback not found with ID: " + feedbackId));
+        return toDto(entity);
     }
 
-    public List<FeedbackEntity> getAllFeedbacks() {
-        return feedbackRepo.findAll();
+    public List<Feedback> getAllFeedbacks() {
+        List<FeedbackEntity> entities = feedbackRepo.findAll();
+        return entities.stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
     }
 
-    public List<FeedbackEntity> getFeedbacksByUserId(int userId) {
-        return feedbackRepo.findByUserUserId(userId);
+    public List<Feedback> getFeedbacksByUserId(int userId) {
+        List<FeedbackEntity> entities = feedbackRepo.findByUserUserId(userId);
+        return entities.stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
     }
 
-    public List<FeedbackEntity> getFeedbacksByEventId(int eventId) {
-        return feedbackRepo.findByEventEventId(eventId);
+    public List<Feedback> getFeedbacksByEventId(int eventId) {
+        List<FeedbackEntity> entities = feedbackRepo.findByEventEventId(eventId);
+        return entities.stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
     }
 
     public void deleteFeedback(int feedbackId) {
@@ -77,13 +123,14 @@ public class FeedbackService {
         }
     }
 
-    public FeedbackEntity updateFeedback(int feedbackId, FeedbackEntity updatedFeedback) {
+    public Feedback updateFeedback(int feedbackId, Feedback updatedFeedbackDto) {
         Optional<FeedbackEntity> existing = feedbackRepo.findById(feedbackId);
         if (existing.isPresent()) {
-            FeedbackEntity feedback = existing.get();
-            feedback.setRating(updatedFeedback.getRating());
-            feedback.setComment(updatedFeedback.getComment());
-            return feedbackRepo.save(feedback);
+            FeedbackEntity feedbackEntity = existing.get();
+            feedbackEntity.setComment(updatedFeedbackDto.getComment());
+            feedbackEntity.setRating(updatedFeedbackDto.getRating());
+            FeedbackEntity saved = feedbackRepo.save(feedbackEntity);
+            return toDto(saved);
         } else {
             throw new RuntimeException("Feedback not found with ID: " + feedbackId);
         }

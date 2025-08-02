@@ -22,7 +22,7 @@ public class CreateEventService {
     public EventEntitiy createEvent(Event dto) throws InvalidEventException {
 
         // Duplicate Event ID Check
-        if (eventrepo.existsById(dto.getEvent_id())) {
+        if (eventrepo.existsById(dto.getEventId())) {
             throw new InvalidEventException("Event ID already exists. Please use a unique ID.");
         }
 
@@ -32,11 +32,11 @@ public class CreateEventService {
         }
 
         // Time Validation
-        if (dto.getStart_time() == null || dto.getEnd_time() == null) {
+        if (dto.getStartTime() == null || dto.getEndTime() == null) {
             throw new InvalidEventException("Start time and End time cannot be null.");
         }
 
-        if (!dto.getStart_time().isBefore(dto.getEnd_time())) {
+        if (!dto.getStartTime().isBefore(dto.getEndTime())) {
             throw new InvalidEventException("Start time should be before End time.");
         }
 
@@ -47,15 +47,15 @@ public class CreateEventService {
 
         // Create Event
         EventEntitiy event = new EventEntitiy();
-        event.setEventId(dto.getEvent_id());
-        event.setEventName(dto.getEvent_name());
+       // event.setEventId(dto.getEventId());
+        event.setEventName(dto.getEventName());
         event.setCategory(dto.getCategory());
         event.setDescription(dto.getDescription());
         event.setLimit(dto.getLimit());
         event.setLocation(dto.getLocation());
         event.setDate(dto.getDate());
-        event.setStartTime(dto.getStart_time());
-        event.setEndTime(dto.getEnd_time());
+        event.setStartTime(dto.getStartTime());
+        event.setEndTime(dto.getEndTime());
 
         return eventrepo.save(event);
     }
@@ -88,6 +88,19 @@ public class CreateEventService {
         }
     }
 
+    public List<EventEntitiy> getEvents(){
+     return eventrepo.findAll();
+    }
+    
+    public EventEntitiy searchById(int eventId) throws EventNotFoundException {
+     Optional<EventEntitiy> optevent=eventrepo.findById(eventId);
+     if(optevent.isPresent()) {
+      return optevent.get();
+     }else {
+      throw new EventNotFoundException("Event id not found"+eventId);
+     }
+    }
+    
     public List<EventEntitiy> searchByCategory(String category) {
         return eventrepo.findByCategory(category);
     }
@@ -100,5 +113,44 @@ public class CreateEventService {
     public List<EventEntitiy> getEventsByLocation(String location) {
         return eventrepo.findByLocationIgnoreCase(location);
     }
+    
+    public EventEntitiy updateEvent(int eventId, Event dto) throws EventNotFoundException, InvalidEventException {
+        Optional<EventEntitiy> optionalEvent = eventrepo.findById(eventId);
+
+        if (optionalEvent.isPresent()) {
+            // Validation
+            if (dto.getDate() == null || dto.getDate().isBefore(LocalDate.now())) {
+                throw new InvalidEventException("Event date should be today or in the future.");
+            }
+
+            if (dto.getStartTime() == null || dto.getEndTime() == null) {
+                throw new InvalidEventException("Start time and End time cannot be null.");
+            }
+
+            if (!dto.getStartTime().isBefore(dto.getEndTime())) {
+                throw new InvalidEventException("Start time should be before End time.");
+            }
+
+            if (dto.getLimit() <= 10) {
+                throw new InvalidEventException("Event limit should be greater than 10.");
+            }
+
+            // Perform update
+            EventEntitiy existingEvent = optionalEvent.get();
+            existingEvent.setEventName(dto.getEventName());
+            existingEvent.setCategory(dto.getCategory());
+            existingEvent.setDescription(dto.getDescription());
+            existingEvent.setLimit(dto.getLimit());
+            existingEvent.setLocation(dto.getLocation());
+            existingEvent.setDate(dto.getDate());
+            existingEvent.setStartTime(dto.getStartTime());
+            existingEvent.setEndTime(dto.getEndTime());
+
+            return eventrepo.save(existingEvent);
+        } else {
+            throw new EventNotFoundException("Event not found with ID: " + eventId);
+        }
+    }
+
 
 }

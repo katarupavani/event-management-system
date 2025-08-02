@@ -12,7 +12,7 @@ import cfg.proj.bo.ResponseData;
 import cfg.proj.service.CreateEventService;
 
 @RestController
-@RequestMapping("/events")
+@RequestMapping("/api/events")
 public class CreateEventController {
 
     @Autowired
@@ -98,9 +98,54 @@ public class CreateEventController {
         return response;
     }
     
-    
+    @GetMapping
+    public ResponseData getEvents() {
+     ResponseData response=new ResponseData();
+     try {
+      List<EventEntitiy> events=eventService.getEvents();
+      response.setStatus("sucess");
+      response.setMessage("All Events fetched successfully");
+      response.setData(events);
+     }catch(Exception e) {
+      response.setStatus("error");
+      response.setMessage("fetching all events failed");
+      response.setData(null);
+     }
+     return response;
+    }
    
 
+    @GetMapping("/{id}")
+    public ResponseData getEventsbyId(@PathVariable("id") int eventId) {
     
+     ResponseData response=new ResponseData();
+     try {
+      EventEntitiy events=eventService.searchById(eventId);
+      response.setStatus("sucsess");
+      response.setMessage("Events fetched by id");
+      response.setData(events);
+     }catch(Exception e) {
+      response.setStatus("error");
+      response.setMessage("fetching all events failed");
+      response.setData(null);
+     }
+     return response;
+    }
+    @PutMapping("/update/{id}")
+    public ResponseData updateEvent(@PathVariable("id") int eventId, @RequestBody Event eventDto) {
+        ResponseData response = new ResponseData();
+        try {
+            EventEntitiy updatedEvent = eventService.updateEvent(eventId, eventDto);
+            response.setStatus("success");
+            response.setMessage("Event updated successfully.");
+            response.setData(updatedEvent);
+        } catch (Exception e) {
+            response.setStatus("error");
+            response.setMessage("Error updating event: " + e.getMessage());
+            response.setData(null);
+        }
+        return response;
+    }
+
 
 }

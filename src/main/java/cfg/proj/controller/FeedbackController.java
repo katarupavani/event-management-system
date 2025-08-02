@@ -6,27 +6,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import cfg.proj.DTO.Feedback;
-import cfg.proj.Entities.FeedbackEntity;
 import cfg.proj.bo.ResponseData;
 import cfg.proj.exceptions.UserNotFoundException;
 import cfg.proj.service.FeedbackService;
 
 @RestController
-@RequestMapping("/feedbacks")
+@RequestMapping("/api")
 public class FeedbackController {
 
     @Autowired
     private FeedbackService feedbackService;
 
+  
     @PostMapping("/add")
     public ResponseData addFeedback(@RequestBody Feedback request) throws UserNotFoundException {
         ResponseData response = new ResponseData();
         try {
-            FeedbackEntity saved = feedbackService.addFeedback(
-                request.getUserid(),
-                request.getEventid(),
-                request
-            );
+            Feedback saved = feedbackService.addFeedback(request);
             response.setStatus("success");
             response.setMessage("Feedback added successfully.");
             response.setData(saved);
@@ -42,7 +38,7 @@ public class FeedbackController {
     public ResponseData getFeedbackById(@PathVariable int id) {
         ResponseData response = new ResponseData();
         try {
-            FeedbackEntity feedback = feedbackService.getFeedbackById(id);
+            Feedback feedback = feedbackService.getFeedbackById(id);
             response.setStatus("success");
             response.setMessage("Feedback fetched successfully.");
             response.setData(feedback);
@@ -58,7 +54,7 @@ public class FeedbackController {
     public ResponseData getAllFeedbacks() {
         ResponseData response = new ResponseData();
         try {
-            List<FeedbackEntity> feedbacks = feedbackService.getAllFeedbacks();
+            List<Feedback> feedbacks = feedbackService.getAllFeedbacks();
             response.setStatus("success");
             response.setMessage("All feedbacks fetched successfully.");
             response.setData(feedbacks);
@@ -74,7 +70,7 @@ public class FeedbackController {
     public ResponseData getFeedbacksByUserId(@PathVariable int userId) {
         ResponseData response = new ResponseData();
         try {
-            List<FeedbackEntity> feedbacks = feedbackService.getFeedbacksByUserId(userId);
+            List<Feedback> feedbacks = feedbackService.getFeedbacksByUserId(userId);
             response.setStatus("success");
             response.setMessage("Feedbacks fetched successfully for user.");
             response.setData(feedbacks);
@@ -90,7 +86,7 @@ public class FeedbackController {
     public ResponseData getFeedbacksByEventId(@PathVariable int eventId) {
         ResponseData response = new ResponseData();
         try {
-            List<FeedbackEntity> feedbacks = feedbackService.getFeedbacksByEventId(eventId);
+            List<Feedback> feedbacks = feedbackService.getFeedbacksByEventId(eventId);
             response.setStatus("success");
             response.setMessage("Feedbacks fetched successfully for event.");
             response.setData(feedbacks);
@@ -102,11 +98,12 @@ public class FeedbackController {
         return response;
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseData updateFeedback(@PathVariable int id, @RequestBody FeedbackEntity updatedFeedback) {
+    // Update feedback - accept DTO and feedback ID
+    @PutMapping(value = "/update/{id}")
+    public ResponseData updateFeedback(@PathVariable int id, @RequestBody Feedback updatedFeedback) {
         ResponseData response = new ResponseData();
         try {
-            FeedbackEntity updated = feedbackService.updateFeedback(id, updatedFeedback);
+            Feedback updated = feedbackService.updateFeedback(id, updatedFeedback);
             response.setStatus("success");
             response.setMessage("Feedback updated successfully.");
             response.setData(updated);

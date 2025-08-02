@@ -11,6 +11,8 @@ public class Feedback {
 	private int rating;
 	private String comment;
 	
+	private String userName;
+	private String eventName;
 	
 
 }

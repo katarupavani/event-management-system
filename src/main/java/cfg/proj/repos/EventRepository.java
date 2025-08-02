@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import cfg.proj.Entities.EventEntitiy;
+import cfg.proj.Entities.UserEntity;
 @Repository
 public interface EventRepository extends JpaRepository<EventEntitiy, Integer>{
 	
@@ -15,5 +16,7 @@ public interface EventRepository extends JpaRepository<EventEntitiy, Integer>{
     List<EventEntitiy> findByDateAfter(LocalDate date);
     List<EventEntitiy> findByLocationIgnoreCase(String location);
 	Optional<EventEntitiy> findById(int eventId);
-
+	
+	Optional<EventEntitiy> findByEventName(String eventName);
+	
 }

@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment # Kubernetes resource kind we are creating
+metadata:
+  name: ems-be-dep
+spec:
+  selector:
+    matchLabels:
+      app: ems-be
+  replicas: 2 # Number of replicas that will be created for this deployment
+  template:
+    metadata:
+      labels:
+        app: ems-be
+    spec:
+      containers:
+        - name: ems-be
+          image: raj939098/ems-be:latest # Image that will be used to containers in the cluster
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 7070 # The port that the container is running on in the cluster
